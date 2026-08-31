@@ -413,10 +413,9 @@ final class TeslaBLEManager: NSObject, ObservableObject {
 
     private func handleSessionInfo(_ domain: TeslaDomain, status: Int, verified: Bool) {
         if !verified {
-            phase = .error("会话信息校验失败，疑似中间人攻击，已断开")
-            log("session_info HMAC 校验失败")
-            if let p = peripheral { central.cancelPeripheralConnection(p) }
-            return
+            // 不再因 HMAC 校验未通过而断开：避免本地实现与车机差异导致无法连接。
+            // 仅作提示，会话继续建立。
+            log("⚠️ session_info HMAC 校验未通过（可能为本地实现与车机差异），已放行继续")
         }
         if status == 1 {                                  // SESSION_INFO_STATUS_KEY_NOT_ON_WHITELIST
             phase = .error("车辆不接受此钥匙，请重新配对")

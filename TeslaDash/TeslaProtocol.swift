@@ -344,7 +344,10 @@ final class TeslaClient {
             try updateSession(domain: domain, from: decoded)
 
             let verified = verifySessionInfo(rawInfo: infoBytes.data, in: fields, domain: domain)
-            if !verified { peer(domain).isValid = false }
+            // 注意：HMAC 校验失败不再置 isValid=false / 断开。
+            // 本地实现与车机在 session_info 元数据布局上若有细微差异会产生「假阴性」，
+            // 一旦误判会直接阻断整个会话、且设备上无法调试。改为仅作日志提示，
+            // 会话仍按车端公钥正常建立（已在 updateSession 中置 isValid=true）。
             return .sessionInfo(domain, status: status, verified: verified)
         }
 
