@@ -156,7 +156,8 @@ private struct ActionButton: View {
 
 private extension Text {
     func sectionTitle() -> some View {
-        self.font(.caption.uppercased())
+        self.textCase(.uppercase)
+            .font(.caption)
             .foregroundColor(.white.opacity(0.45))
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal)
