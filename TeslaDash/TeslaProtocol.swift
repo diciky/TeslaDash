@@ -80,8 +80,8 @@ final class TeslaPeer {
 
     /// 车辆时间 = clock_time + 本地经过的秒数 + 有效期
     func expiresAt(seconds: Int = 30) -> UInt32 {
-        let elapsed = UInt32(max(0, Date().timeIntervalSince(sessionStart)))
-        return clockTime &+ elapsed &+ UInt32(seconds)
+        let elapsed = UInt32(max(0, Date().timeIntervalSince(sessionStart))) ?? 0
+        return clockTime &+ elapsed &+ UInt32(truncatingIfNeeded: seconds)
     }
 
     func reset() {
@@ -135,8 +135,8 @@ final class TeslaClient {
     /// Tesla BLE 每条消息前置 2 字节大端长度
     private func prependLength(_ payload: Data) -> Data {
         var out = Data()
-        out.append(UInt8((payload.count >> 8) & 0xFF))
-        out.append(UInt8(payload.count & 0xFF))
+        out.append(UInt8(truncatingIfNeeded: (payload.count >> 8) & 0xFF))
+        out.append(UInt8(truncatingIfNeeded: payload.count & 0xFF))
         out.append(payload)
         return out
     }
@@ -340,7 +340,7 @@ final class TeslaClient {
         // 会话信息（15 = session_info，明文的 Signatures.SessionInfo）
         if let infoBytes = PBReader.value(15, in: fields) {
             let decoded = PBReader.nested(infoBytes)
-            let status = Int(PBReader.value(5, in: decoded)?.uint ?? 0)
+            let status = Int(truncatingIfNeeded: PBReader.value(5, in: decoded)?.uint ?? 0)
             try updateSession(domain: domain, from: decoded)
 
             let verified = verifySessionInfo(rawInfo: infoBytes.data, in: fields, domain: domain)
@@ -352,7 +352,7 @@ final class TeslaClient {
         if let status = PBReader.value(12, in: fields) {
             let nested = PBReader.nested(status)
             if let fault = PBReader.value(2, in: nested), fault.uint != 0 {
-                return .fault(Int(fault.uint))
+                return .fault(Int(truncatingIfNeeded: fault.uint))
             }
         }
 
@@ -371,7 +371,7 @@ final class TeslaClient {
         // 加密响应 → 解密
         if !responseSig.isEmpty {
             let nonce = PBReader.value(1, in: responseSig)?.data ?? Data()
-            let counter = UInt32(PBReader.value(2, in: responseSig)?.uint ?? 0)
+            let counter = UInt32(truncatingIfNeeded: PBReader.value(2, in: responseSig)?.uint ?? 0)
             let tag = PBReader.value(3, in: responseSig)?.data ?? Data()
 
             let p = peer(domain)
@@ -449,7 +449,7 @@ final class TeslaClient {
                                from fields: [(field: Int, value: PBValue)]) throws {
         let p = peer(domain)
 
-        let counter = UInt32(PBReader.value(1, in: fields)?.uint ?? 0)
+        let counter = UInt32(truncatingIfNeeded: PBReader.value(1, in: fields)?.uint ?? 0)
         let publicKey = PBReader.value(2, in: fields)?.data
         let epoch = PBReader.value(3, in: fields)?.data
         let clockTime = PBReader.value(4, in: fields)?.uint32 ?? 0

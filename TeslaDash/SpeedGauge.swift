@@ -61,7 +61,7 @@ struct SpeedGauge: View {
                         .font(.system(size: size * 0.10, weight: .bold, design: .rounded))
                         .foregroundColor(gear == "D" ? .green : (gear == "R" ? .orange : .white))
 
-                    Text("\(Int(speedKmh.rounded()))")
+                    Text("\(lround(speedKmh))")
                         .font(.system(size: size * 0.30, weight: .heavy, design: .rounded))
                         .monospacedDigit()
                         .foregroundColor(.white)

@@ -21,6 +21,7 @@ jobs:
 
       - name: Archive (no code signing)
         run: |
+          set -o pipefail
           xcodebuild archive \
             -project TeslaDash.xcodeproj \
             -target TeslaDash \
@@ -35,11 +36,12 @@ jobs:
             | tee build.log
 
       - name: Package unsigned IPA
+        if: success()
         run: |
           APP_PATH=$(find build -name "TeslaDash.app" -type d | head -1)
           if [ -z "$APP_PATH" ]; then
             echo "::error::未找到编译产物 TeslaDash.app"
-            tail -n 50 build.log
+            tail -n 80 build.log
             exit 1
           fi
           mkdir -p Payload
@@ -49,8 +51,17 @@ jobs:
           ls -la TeslaDash.ipa
 
       - name: Upload IPA artifact
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: TeslaDash-unsigned-ipa
           path: TeslaDash.ipa
           retention-days: 30
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
+          retention-days: 7

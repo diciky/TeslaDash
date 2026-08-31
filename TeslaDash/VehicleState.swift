@@ -171,7 +171,7 @@ final class VehicleState: ObservableObject {
         setDoor("chargePort", isOpen(7))
 
         // vehicleLockState (2)：0 解锁 / 1 锁定 / 2 内部锁定 / 3 选择性解锁
-        let lockRaw = Int(PBReader.value(2, in: f)?.uint ?? 0)
+        let lockRaw = Int(truncatingIfNeeded: PBReader.value(2, in: f)?.uint ?? 0)
         isLocked = (lockRaw == 1 || lockRaw == 2)
         lockState = ["已解锁", "已锁定", "内部锁定", "选择性解锁"].indiciesSafe(lockRaw)
 
@@ -188,8 +188,8 @@ final class VehicleState: ObservableObject {
         // 配对流程：WhitelistOperation_status (3)
         if let wl = PBReader.value(3, in: f) {
             let nested = PBReader.nested(wl)
-            let info = Int(PBReader.value(1, in: nested)?.uint ?? 0)
-            let opStatus = Int(PBReader.value(3, in: nested)?.uint ?? 0)
+            let info = Int(truncatingIfNeeded: PBReader.value(1, in: nested)?.uint ?? 0)
+            let opStatus = Int(truncatingIfNeeded: PBReader.value(3, in: nested)?.uint ?? 0)
             pairingMessage = "\(PairingStatus.text(info))（状态 \(opStatus)）"
         }
     }

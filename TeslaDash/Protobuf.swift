@@ -125,8 +125,8 @@ struct PBReader {
 
     mutating func next() -> (field: Int, value: PBValue)? {
         guard let key = readVarInt() else { return nil }
-        let field = Int(key >> 3)
-        let wire = Int(key & 0x07)
+        let field = Int(truncatingIfNeeded: key >> 3)
+        let wire = Int(truncatingIfNeeded: key & 0x07)
 
         switch wire {
         case 0:
@@ -141,9 +141,9 @@ struct PBReader {
             return (field, .fixed64(v))
 
         case 2:
-            guard let len = readVarInt(), index + Int(len) <= data.count else { return nil }
+            guard let len = readVarInt(), index + Int(truncatingIfNeeded: len) <= data.count else { return nil }
             let start = index
-            index += Int(len)
+            index += Int(truncatingIfNeeded: len)
             return (field, .bytes(data.subdata(in: start..<index)))
 
         case 5:

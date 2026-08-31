@@ -283,7 +283,7 @@ final class TeslaBLEManager: NSObject, ObservableObject {
         phase = .pairing(.waitingForKeyCard)
         log("发送白名单添加请求（角色 \(role)）")
         do {
-            let frame = try client.buildWhitelistAdd(role: UInt8(role), formFactor: 6)
+            let frame = try client.buildWhitelistAdd(role: UInt8(truncatingIfNeeded: role), formFactor: 6)
             try send(frame, to: .vehicleSecurity)
         } catch {
             phase = .pairing(.failed(error.localizedDescription))
@@ -325,13 +325,13 @@ final class TeslaBLEManager: NSObject, ObservableObject {
 
     func setChargeLimit(percent: Int) {
         var body = PBWriter()
-        body.int32(1, Int32(percent), force: true)   // ChargingSetLimitAction.percent
+        body.int32(1, Int32(truncatingIfNeeded: percent), force: true)   // ChargingSetLimitAction.percent
         carServerAction(field: 5, payload: body.data)
     }
 
     func setChargingAmps(_ amps: Int) {
         var body = PBWriter()
-        body.int32(1, Int32(amps), force: true)      // SetChargingAmpsAction.charging_amps
+        body.int32(1, Int32(truncatingIfNeeded: amps), force: true)      // SetChargingAmpsAction.charging_amps
         carServerAction(field: 43, payload: body.data)
     }
 
@@ -459,8 +459,8 @@ final class TeslaBLEManager: NSObject, ObservableObject {
         guard let whitelist = PBReader.value(3, in: nested) else { return }
         let wlf = PBReader.nested(whitelist)
 
-        let operation = Int(PBReader.value(3, in: wlf)?.uint ?? 0)
-        let info = Int(PBReader.value(1, in: wlf)?.uint ?? 0)
+        let operation = Int(truncatingIfNeeded: PBReader.value(3, in: wlf)?.uint ?? 0)
+        let info = Int(truncatingIfNeeded: PBReader.value(1, in: wlf)?.uint ?? 0)
 
         switch operation {
         case 1:                                          // OPERATIONSTATUS_WAIT

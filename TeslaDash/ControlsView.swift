@@ -87,7 +87,7 @@ struct ControlsView: View {
                                 .font(.system(size: 24, weight: .heavy, design: .rounded))
                                 .monospacedDigit()
                             Slider(value: Binding(get: { Double(chargeLimit) },
-                                                 set: { chargeLimit = Int($0); ble.setChargeLimit(percent: chargeLimit) }),
+                                                 set: { chargeLimit = lround($0); ble.setChargeLimit(percent: chargeLimit) }),
                                    in: 50...100, step: 1)
                                 .accentColor(.green)
                                 .disabled(!enabled)

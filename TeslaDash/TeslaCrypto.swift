@@ -79,7 +79,7 @@ enum TeslaCrypto {
         func append(_ tag: ADTag, _ value: Data) {
             precondition(value.count <= 255, "AD TLV 单段不得超过 255 字节")
             out.append(tag.rawValue)
-            out.append(UInt8(value.count))
+            out.append(UInt8(truncatingIfNeeded: value.count))
             out.append(value)
         }
 
@@ -142,7 +142,7 @@ enum TeslaCrypto {
         var out = Data()
         func append(_ tag: ADTag, _ value: Data) {
             out.append(tag.rawValue)
-            out.append(UInt8(min(value.count, 255)))
+            out.append(UInt8(truncatingIfNeeded: min(value.count, 255)))
             out.append(value.prefix(255))
         }
         append(.signatureType, Data([SigType.hmac.rawValue]))
