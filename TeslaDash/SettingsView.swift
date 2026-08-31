@@ -99,8 +99,11 @@ struct SettingsView: View {
                         .toggleStyle(SwitchToggleStyle(tint: .blue))
 
                     Button {
-                        if ble.phase == .idle || case .error = ble.phase {
+                        switch ble.phase {
+                        case .idle, .error:
                             ble.reconnectSaved()
+                        default:
+                            break
                         }
                         ble.startScan()
                     } label: {
