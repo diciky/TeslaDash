@@ -1,0 +1,15 @@
+# Xcode
+build/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/
+DerivedData/
+*.ipa
+Payload/
+build.log
+
+# 用户钥匙 / 本机数据（绝不入库）
+*.keychain
+TeslaDash/Settings.bundle/
+
+# macOS
+.DS_Store

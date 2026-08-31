@@ -1,0 +1,261 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+	/* Begin PBXBuildFile section */
+		1C9553C112404D979AB72233 /* ControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7A8898818984914A6D7F791 /* ControlsView.swift */; };
+		5C8150301E4D4E0BA28B91EB /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7678BF7F05DC46BE85926D55 /* DashboardView.swift */; };
+		869FDD33DB1348439716786D /* KeyStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F269FA327EC44A29E9F6F0D /* KeyStore.swift */; };
+		F5F84E000D644748AD268D4E /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19291E9945914AC1B22DDE88 /* LogView.swift */; };
+		814D2B7974794C5FB718B645 /* Protobuf.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD14A6A63E4C4856A880C9C5 /* Protobuf.swift */; };
+		294438914C404E54A9846EAB /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3356BC54AC3842AAB4A43454 /* SettingsView.swift */; };
+		576EBA38B46F4F49AE180940 /* SpeedGauge.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCBEFED5D65940D180A9BD31 /* SpeedGauge.swift */; };
+		6AC4513D198840B59749BFDB /* TeslaBLEManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 068C05476DA84C40A4CFD2D3 /* TeslaBLEManager.swift */; };
+		09817338D7D3486EB390A7EE /* TeslaCrypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE0D69171B594CBEA1B0A7BE /* TeslaCrypto.swift */; };
+		B7DCAA517872479EB660AD9C /* TeslaDashApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D9ACB6A86A04F97AC2F8D02 /* TeslaDashApp.swift */; };
+		30BFA0BF8E1642B488576E9D /* TeslaProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4092D22C560C4A7B8300118D /* TeslaProtocol.swift */; };
+		23233462815C48CE911EDD57 /* VehicleState.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE83A3DA33A4E9BA97DE93D /* VehicleState.swift */; };
+		2A48898897E44A18948D39DD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 06A9D580F5544CF29F06EDBA /* Assets.xcassets */; };
+	/* End PBXBuildFile section */
+
+	/* Begin PBXFileReference section */
+		F7A8898818984914A6D7F791 /* ControlsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlsView.swift; sourceTree = "<group>"; };
+		7678BF7F05DC46BE85926D55 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		1F269FA327EC44A29E9F6F0D /* KeyStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyStore.swift; sourceTree = "<group>"; };
+		19291E9945914AC1B22DDE88 /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
+		AD14A6A63E4C4856A880C9C5 /* Protobuf.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Protobuf.swift; sourceTree = "<group>"; };
+		3356BC54AC3842AAB4A43454 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		CCBEFED5D65940D180A9BD31 /* SpeedGauge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedGauge.swift; sourceTree = "<group>"; };
+		068C05476DA84C40A4CFD2D3 /* TeslaBLEManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeslaBLEManager.swift; sourceTree = "<group>"; };
+		AE0D69171B594CBEA1B0A7BE /* TeslaCrypto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeslaCrypto.swift; sourceTree = "<group>"; };
+		4D9ACB6A86A04F97AC2F8D02 /* TeslaDashApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeslaDashApp.swift; sourceTree = "<group>"; };
+		4092D22C560C4A7B8300118D /* TeslaProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeslaProtocol.swift; sourceTree = "<group>"; };
+		BCE83A3DA33A4E9BA97DE93D /* VehicleState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VehicleState.swift; sourceTree = "<group>"; };
+		06A9D580F5544CF29F06EDBA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		62C46977B76440578D8252E3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F1CEA0793EF040DB983D99AC /* TeslaDash.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TeslaDash.app; sourceTree = BUILT_PRODUCTS_DIR; };
+	/* End PBXFileReference section */
+
+	/* Begin PBXFrameworksBuildPhase section */
+		2EF853C490AB4FC59A2AB296 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+	/* End PBXFrameworksBuildPhase section */
+
+	/* Begin PBXGroup section */
+		9709738FEE97497194EEF72E = {
+			isa = PBXGroup;
+			children = (
+				6D700090236740D9B32F3120 /* TeslaDash */,
+				F1CEA0793EF040DB983D99AC /* TeslaDash.app */,
+			);
+			sourceTree = "<group>";
+		};
+		6D700090236740D9B32F3120 /* TeslaDash */ = {
+			isa = PBXGroup;
+			children = (
+				F7A8898818984914A6D7F791 /* ControlsView.swift */,
+				7678BF7F05DC46BE85926D55 /* DashboardView.swift */,
+				1F269FA327EC44A29E9F6F0D /* KeyStore.swift */,
+				19291E9945914AC1B22DDE88 /* LogView.swift */,
+				AD14A6A63E4C4856A880C9C5 /* Protobuf.swift */,
+				3356BC54AC3842AAB4A43454 /* SettingsView.swift */,
+				CCBEFED5D65940D180A9BD31 /* SpeedGauge.swift */,
+				068C05476DA84C40A4CFD2D3 /* TeslaBLEManager.swift */,
+				AE0D69171B594CBEA1B0A7BE /* TeslaCrypto.swift */,
+				4D9ACB6A86A04F97AC2F8D02 /* TeslaDashApp.swift */,
+				4092D22C560C4A7B8300118D /* TeslaProtocol.swift */,
+				BCE83A3DA33A4E9BA97DE93D /* VehicleState.swift */,
+				06A9D580F5544CF29F06EDBA /* Assets.xcassets */,
+				62C46977B76440578D8252E3 /* Info.plist */,
+			);
+			path = TeslaDash;
+			sourceTree = "<group>";
+		};
+	/* End PBXGroup section */
+
+	/* Begin PBXResourcesBuildPhase section */
+		6365E1554CAD4D54A334C032 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2A48898897E44A18948D39DD /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+	/* End PBXResourcesBuildPhase section */
+
+	/* Begin PBXSourcesBuildPhase section */
+		16AB60590ADC4000AC15A12D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1C9553C112404D979AB72233 /* ControlsView.swift in Sources */,
+				5C8150301E4D4E0BA28B91EB /* DashboardView.swift in Sources */,
+				869FDD33DB1348439716786D /* KeyStore.swift in Sources */,
+				F5F84E000D644748AD268D4E /* LogView.swift in Sources */,
+				814D2B7974794C5FB718B645 /* Protobuf.swift in Sources */,
+				294438914C404E54A9846EAB /* SettingsView.swift in Sources */,
+				576EBA38B46F4F49AE180940 /* SpeedGauge.swift in Sources */,
+				6AC4513D198840B59749BFDB /* TeslaBLEManager.swift in Sources */,
+				09817338D7D3486EB390A7EE /* TeslaCrypto.swift in Sources */,
+				B7DCAA517872479EB660AD9C /* TeslaDashApp.swift in Sources */,
+				30BFA0BF8E1642B488576E9D /* TeslaProtocol.swift in Sources */,
+				23233462815C48CE911EDD57 /* VehicleState.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+	/* End PBXSourcesBuildPhase section */
+
+	/* Begin XCBuildConfiguration section */
+		625F486A4B744C6498B34D97 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		5AF39F8B1CDA40AF88D1ED00 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		8ED3392C1B974AD2B1512923 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TeslaDash/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.tesladash;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		9C1DBE864B54442C882A5972 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TeslaDash/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.tesladash;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+	/* End XCBuildConfiguration section */
+
+	/* Begin XCConfigurationList section */
+		9C86E1A8A37A4C82BBCAFF76 /* Build configuration list for PBXProject */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				625F486A4B744C6498B34D97 /* Debug */,
+				5AF39F8B1CDA40AF88D1ED00 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8AC5D42E1C9E4424AE225F7E /* Build configuration list for PBXNativeTarget */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8ED3392C1B974AD2B1512923 /* Debug */,
+				9C1DBE864B54442C882A5972 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+	/* End XCConfigurationList section */
+
+	/* Begin PBXNativeTarget section */
+		6246ADC210C9457AA8159A9F /* TeslaDash */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8AC5D42E1C9E4424AE225F7E /* Build configuration list for PBXNativeTarget */;
+			buildPhases = (
+				16AB60590ADC4000AC15A12D /* Sources */,
+				2EF853C490AB4FC59A2AB296 /* Frameworks */,
+				6365E1554CAD4D54A334C032 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TeslaDash;
+			productName = TeslaDash;
+			productReference = F1CEA0793EF040DB983D99AC /* TeslaDash.app */;
+			productType = "com.apple.product-type.application";
+		};
+	/* End PBXNativeTarget section */
+
+	/* Begin PBXProject section */
+		A1658FB140214FE8A093A55C /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					6246ADC210C9457AA8159A9F = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = 9C86E1A8A37A4C82BBCAFF76 /* Build configuration list for PBXProject */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = zh-Hans;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				"zh-Hans",
+			);
+			mainGroup = 9709738FEE97497194EEF72E;
+			productRefGroup = 6D700090236740D9B32F3120 /* TeslaDash */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				6246ADC210C9457AA8159A9F /* TeslaDash */,
+			);
+		};
+	/* End PBXProject section */
+	};
+	rootObject = A1658FB140214FE8A093A55C /* Project object */;
+}

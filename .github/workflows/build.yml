@@ -1,0 +1,56 @@
+name: Build IPA
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build unsigned IPA (iOS 15+)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Regenerate Xcode project
+        run: python3 gen_project.py
+
+      - name: Archive (no code signing)
+        run: |
+          xcodebuild archive \
+            -project TeslaDash.xcodeproj \
+            -target TeslaDash \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/TeslaDash.xcarchive \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            DEVELOPMENT_TEAM="" \
+            ONLY_ACTIVE_ARCH=NO \
+            | tee build.log
+
+      - name: Package unsigned IPA
+        run: |
+          APP_PATH=$(find build -name "TeslaDash.app" -type d | head -1)
+          if [ -z "$APP_PATH" ]; then
+            echo "::error::未找到编译产物 TeslaDash.app"
+            tail -n 50 build.log
+            exit 1
+          fi
+          mkdir -p Payload
+          cp -R "$APP_PATH" Payload/
+          zip -r TeslaDash.ipa Payload
+          rm -rf Payload
+          ls -la TeslaDash.ipa
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TeslaDash-unsigned-ipa
+          path: TeslaDash.ipa
+          retention-days: 30
