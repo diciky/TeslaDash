@@ -58,7 +58,7 @@ struct SettingsView: View {
                     } label: {
                         Label("开始配对", systemImage: "plus.circle.fill")
                     }
-                    .disabled(ble.vin.isEmpty)
+                    .disabled(ble.vin.isEmpty || !ble.canPair)
 
                     if case .pairing(let step) = ble.phase {
                         HStack {

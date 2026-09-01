@@ -141,6 +141,9 @@ final class TeslaBLEManager: NSObject, ObservableObject {
 
     var hasKey: Bool { client.privateKey != nil }
 
+    /// 是否可以发起配对：需要先连上车辆并发现 VCSEC 写入通道
+    var canPair: Bool { vcsecWrite != nil }
+
     func ensureKey() {
         if client.privateKey == nil {
             let key = P256.KeyAgreement.PrivateKey()
@@ -278,6 +281,11 @@ final class TeslaBLEManager: NSObject, ObservableObject {
     // MARK: 配对
 
     func startPairing(role: Int = 3) {
+        guard canPair else {
+            phase = .pairing(.failed("请先在「连接」中扫描并连接车辆，再来配对"))
+            log("未连接就尝试配对")
+            return
+        }
         ensureKey()
         client.vin = vin
         phase = .pairing(.waitingForKeyCard)
@@ -351,7 +359,7 @@ final class TeslaBLEManager: NSObject, ObservableObject {
 
     private func send(_ frame: Data, to domain: TeslaDomain) throws {
         guard let target = (domain == .vehicleSecurity ? vcsecWrite : infoWrite) else {
-            throw TeslaError.invalidFrame
+            throw TeslaError.notConnected
         }
         let maxLen = peripheral?.maximumWriteValueLength(for: .withResponse) ?? 20
         var offset = 0
@@ -595,6 +603,18 @@ extension TeslaBLEManager: CBPeripheralDelegate {
             default:
                 break
             }
+        }
+
+        // 调试：若该服务下没有任何 Tesla 已知通道被匹配，打印实际 UUID 便于排查 UUID 不匹配
+        let chars = service.characteristics ?? []
+        let known: Set<String> = [TeslaBLEUUID.vcsecWrite.uppercased(),
+                                  TeslaBLEUUID.vcsecNotify.uppercased(),
+                                  TeslaBLEUUID.infoWrite.uppercased(),
+                                  TeslaBLEUUID.infoNotify.uppercased()]
+        let hasMatch = chars.contains { known.contains($0.uuid.uuidString.uppercased()) }
+        if !hasMatch, !chars.isEmpty {
+            let dump = chars.map { $0.uuid.uuidString.uppercased() }.joined(separator: ", ")
+            log("⚠️ 服务 \(uuid) 下无已知 Tesla 通道，实际 UUID: [\(dump)]")
         }
 
         if uuid == TeslaBLEUUID.infoService {

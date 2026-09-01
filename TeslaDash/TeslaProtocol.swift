@@ -15,6 +15,7 @@ enum TeslaError: LocalizedError {
     case noPrivateKey
     case sessionNotReady
     case invalidFrame
+    case notConnected
     case crypto(String)
     case vehicleFault(Int)
 
@@ -23,6 +24,7 @@ enum TeslaError: LocalizedError {
         case .noPrivateKey:      return "尚未生成密钥，请先配对"
         case .sessionNotReady:   return "会话未就绪，正在握手"
         case .invalidFrame:      return "收到无法解析的 BLE 数据帧"
+        case .notConnected:      return "未连接车辆，请先在「连接」中扫描并连接"
         case .crypto(let s):     return "加密失败：\(s)"
         case .vehicleFault(let f): return "车辆返回错误：\(TeslaError.faultText(f))"
         }
