@@ -269,7 +269,7 @@ final class TeslaBLEManager: NSObject, ObservableObject {
             log("VCSEC 状态请求失败：\(error.localizedDescription)")
         }
         // 车睡着时不去吵醒信息娱乐域
-        if infoWrite != nil, !state.isAsleep {
+        if !state.isAsleep {
             do {
                 try send(client.buildGetVehicleData(), to: .infotainment)
             } catch {
@@ -358,7 +358,11 @@ final class TeslaBLEManager: NSObject, ObservableObject {
     // MARK: 发送（按 MTU 分片，串行 write with response）
 
     private func send(_ frame: Data, to domain: TeslaDomain) throws {
-        guard let target = (domain == .vehicleSecurity ? vcsecWrite : infoWrite) else {
+        // 官方 vehicle-command 只用 VCSEC 这一个 BLE 服务(0x211)承载全部域，
+        // 信息娱乐域(domain=3)靠 protobuf 的 to_destination.domain 路由，不依赖独立服务。
+        // 因此没有独立信息娱乐服务时，回退到 VCSEC 写入通道，否则 domain 3 消息会永远发不出去。
+        let preferred = (domain == .vehicleSecurity ? vcsecWrite : infoWrite)
+        guard let target = preferred ?? vcsecWrite else {
             throw TeslaError.notConnected
         }
         let maxLen = peripheral?.maximumWriteValueLength(for: .withResponse) ?? 20
@@ -438,11 +442,9 @@ final class TeslaBLEManager: NSObject, ObservableObject {
         }
 
         if domain == .vehicleSecurity {
-            if infoNotify != nil {
-                sendSessionInfoRequest(.infotainment)
-            } else {
-                becomeReady()
-            }
+            // 即使没有独立的信息娱乐服务，也要请求 domain=3 的会话（走 VCSEC 通道），
+            // 否则拿不到车速/电量等 CarServer 数据。
+            sendSessionInfoRequest(.infotainment)
         } else {
             becomeReady()
         }

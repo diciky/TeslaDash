@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct SettingsView: View {
 
@@ -14,6 +15,7 @@ struct SettingsView: View {
 
     @State private var vinInput: String = ""
     @State private var pairingRole = 3
+    @State private var vinSaved = false
 
     var body: some View {
         NavigationView {
@@ -28,8 +30,20 @@ struct SettingsView: View {
                             .disableAutocorrection(true)
                             .onSubmit { applyVin() }
                     }
-                    Button("保存 VIN") { applyVin() }
-                        .disabled(vinInput.trimmingCharacters(in: .whitespaces).isEmpty)
+                    Button {
+                        haptic()
+                        applyVin()
+                    } label: {
+                        HStack {
+                            Text("保存 VIN")
+                            Spacer()
+                            if vinSaved {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundColor(.green)
+                            }
+                        }
+                    }
+                    .disabled(vinInput.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
 
                 Section(header: Text("配对")) {
@@ -53,6 +67,7 @@ struct SettingsView: View {
                     .pickerStyle(SegmentedPickerStyle())
 
                     Button {
+                        haptic()
                         ble.ensureKey()
                         ble.startPairing(role: pairingRole)
                     } label: {
@@ -99,6 +114,7 @@ struct SettingsView: View {
                         .toggleStyle(SwitchToggleStyle(tint: .blue))
 
                     Button {
+                        haptic()
                         switch ble.phase {
                         case .idle, .error:
                             ble.reconnectSaved()
@@ -111,9 +127,41 @@ struct SettingsView: View {
                     }
 
                     Button(role: .destructive) {
+                        haptic()
                         ble.disconnect()
                     } label: {
                         Label("断开连接", systemImage: "xmark.octagon.fill")
+                    }
+                }
+
+                // 扫描到的车辆：点一下即连接。
+                // 之前扫描结果只写进日志、界面没有任何入口，导致车扫得到却永远连不上，
+                // 进而 vcsecWrite 始终为空、"开始配对"一直灰着。
+                if !ble.vehicles.isEmpty {
+                    Section(header: Text("发现的车辆（点击连接）")) {
+                        ForEach(ble.vehicles) { v in
+                            Button {
+                                haptic()
+                                ble.connect(v)
+                            } label: {
+                                HStack(spacing: 10) {
+                                    Image(systemName: "car.fill")
+                                        .foregroundColor(.green)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(v.name)
+                                            .font(.system(size: 13, design: .monospaced))
+                                            .foregroundColor(.primary)
+                                        Text("信号 \(v.rssi) dBm")
+                                            .font(.caption2)
+                                            .foregroundColor(.secondary)
+                                    }
+                                    Spacer()
+                                    Text("连接")
+                                        .font(.caption)
+                                        .foregroundColor(.blue)
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -151,6 +199,15 @@ struct SettingsView: View {
         let v = vinInput.trimmingCharacters(in: .whitespaces).uppercased()
         ble.updateVIN(v)
         vinInput = v
+        withAnimation { vinSaved = true }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            withAnimation { vinSaved = false }
+        }
+    }
+
+    /// 轻触感反馈：让每个按钮点击都有明确的手感回应，解决"不知道点没点上"的问题
+    private func haptic() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
 }
 
