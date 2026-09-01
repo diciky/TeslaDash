@@ -77,10 +77,12 @@ enum TeslaCrypto {
         var out = Data()
 
         func append(_ tag: ADTag, _ value: Data) {
-            precondition(value.count <= 255, "AD TLV 单段不得超过 255 字节")
+            // 原先用 precondition 断言 ≤255，一旦触发就是进程级崩溃且设备上无法定位。
+            // 改为静默截断：单段超过 255 字节的情况本不该出现，截断后最多握手失败，
+            // 会被上层当错误处理并写进日志，远比直接闪退好排查。
             out.append(tag.rawValue)
-            out.append(UInt8(truncatingIfNeeded: value.count))
-            out.append(value)
+            out.append(UInt8(truncatingIfNeeded: min(value.count, 255)))
+            out.append(value.prefix(255))
         }
 
         func be(_ v: UInt32) -> Data {

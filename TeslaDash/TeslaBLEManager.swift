@@ -72,6 +72,13 @@ final class TeslaBLEManager: NSObject, ObservableObject {
     @Published var logLines: [String] = []
     @Published var autoReconnect = true
 
+    /// 安全模式：上次会话异常结束时自动开启，暂停一切自动重连，
+    /// 否则「靠近车 → 启动 → 自动连接 → 闪退」会变成死循环，App 根本打不开。
+    @Published var safeMode = false
+
+    /// 上次崩溃报告（原因 + 调用栈 + 崩溃前最后日志），在「日志」页展示
+    @Published var crashReport: String?
+
     @AppStorage("vin") var vin: String = ""
     @AppStorage("savedPeripheralID") private var savedPeripheralID: String = ""
     @AppStorage("autoRefresh") var autoRefresh = true
@@ -95,6 +102,11 @@ final class TeslaBLEManager: NSObject, ObservableObject {
     private var pendingServiceCount = 0
     private var didStartHandshake = false
     private var pollTimer: Timer?
+    private var announcedSafeMode = false
+
+    /// 启动哨兵：init 时置 true，跑满 6 秒后置 false。
+    /// 下次启动若发现它还是 true，说明上次没活过 6 秒 → 判定为异常退出，进安全模式。
+    private static let launchingKey = "appIsLaunching"
 
     // MARK: 生命周期
 
@@ -104,17 +116,70 @@ final class TeslaBLEManager: NSObject, ObservableObject {
         state = VehicleState(settings: s)
         super.init()
 
+        loadCrashState()
+
         client.privateKey = KeyStore.load()
         client.vin = vin
         central = CBCentralManager(delegate: self, queue: .main)
     }
 
+    // MARK: 崩溃自救
+
+    private func loadCrashState() {
+        let ud = UserDefaults.standard
+        let diedLastTime = ud.bool(forKey: Self.launchingKey)
+        ud.set(true, forKey: Self.launchingKey)
+
+        if diedLastTime || CrashCatcher.reportExists() {
+            safeMode = true
+            crashReport = CrashCatcher.takeReport()
+        }
+
+        // 活过 6 秒就认为这次启动是稳定的，解除哨兵
+        DispatchQueue.main.asyncAfter(deadline: .now() + 6) { Self.markLaunchStable() }
+
+        // 把上次会话的日志接在前面：崩溃场景下，最有价值的就是最后那几行
+        if let prev = ud.stringArray(forKey: CrashCatcher.logKey), !prev.isEmpty {
+            logLines.append(contentsOf: prev)
+            logLines.append("——— 以上为上次会话（若崩溃，末尾即现场） ———")
+        }
+    }
+
+    /// 标记本次启动已稳定（进后台也视为正常退出，避免用户随手划掉 App 就误判成崩溃）
+    static func markLaunchStable() {
+        UserDefaults.standard.set(false, forKey: launchingKey)
+    }
+
+    /// 恢复正常模式：重新允许自动重连，并清掉崩溃报告
+    func resumeNormalMode() {
+        safeMode = false
+        crashReport = nil
+        announcedSafeMode = false
+        log("已恢复正常模式，自动重连已开启")
+    }
+
+    /// 清除已保存的车辆，避免一启动就自动连上去（排查闪退时用）
+    func forgetSavedVehicle() {
+        savedPeripheralID = ""
+        log("已清除已保存车辆，启动时不再自动连接")
+    }
+
+    // MARK: 日志（同步 + 落盘）
+
     func log(_ text: String) {
         let line = String(format: "%@ %@", Self.timestampFormatter.string(from: Date()), text)
-        DispatchQueue.main.async {
-            self.logLines.append(line)
-            if self.logLines.count > 200 { self.logLines.removeFirst(self.logLines.count - 200) }
+        if Thread.isMainThread {
+            appendLog(line)
+        } else {
+            DispatchQueue.main.async { [weak self] in self?.appendLog(line) }
         }
+    }
+
+    private func appendLog(_ line: String) {
+        logLines.append(line)
+        if logLines.count > 200 { logLines.removeFirst(logLines.count - 200) }
+        // 同步落盘：进程一崩内存日志就没了，落盘后下次启动还能看到崩溃前最后几行。
+        UserDefaults.standard.set(Array(logLines.suffix(120)), forKey: CrashCatcher.logKey)
     }
 
     private static let timestampFormatter: DateFormatter = {
@@ -229,8 +294,10 @@ final class TeslaBLEManager: NSObject, ObservableObject {
         }
 
         phase = .authenticating
+        log("准备握手：钥匙 \(client.privateKey != nil ? "已有" : "缺失")，VIN \(vin.isEmpty ? "空" : "已填")")
         log("请求 VCSEC 会话")
         sendSessionInfoRequest(.vehicleSecurity)
+        log("VCSEC 会话请求已发出")
     }
 
     private func sendSessionInfoRequest(_ domain: TeslaDomain) {
@@ -365,7 +432,9 @@ final class TeslaBLEManager: NSObject, ObservableObject {
         guard let target = preferred ?? vcsecWrite else {
             throw TeslaError.notConnected
         }
-        let maxLen = peripheral?.maximumWriteValueLength(for: .withResponse) ?? 20
+        let raw = peripheral?.maximumWriteValueLength(for: .withResponse) ?? 20
+        // 未连接/异常时该值可能为 0，直接 min 会让下面的 while 变成死循环卡死主线程
+        let maxLen = max(20, min(raw, 512))
         var offset = 0
         while offset < frame.count {
             let len = min(maxLen, frame.count - offset)
@@ -392,6 +461,12 @@ final class TeslaBLEManager: NSObject, ObservableObject {
 
         while rxBuffer.count >= 2 {
             let length = Int(rxBuffer[0]) << 8 | Int(rxBuffer[1])
+            // 单帧长度上限 4096，超了说明缓冲区已经错位，直接丢干净等下一帧
+            if length > 4096 {
+                log("⚠️ 异常帧长度 \(length)，已清空缓冲")
+                rxBuffer.removeAll()
+                break
+            }
             guard length > 0 else {
                 rxBuffer.removeFirst(2)
                 continue
@@ -495,7 +570,15 @@ extension TeslaBLEManager: CBCentralManagerDelegate {
         switch central.state {
         case .poweredOn:
             if phase == .poweredOff || phase == .unauthorized { phase = .idle }
-            if autoReconnect, !savedPeripheralID.isEmpty { reconnectSaved() }
+            if safeMode {
+                if !announcedSafeMode {
+                    announcedSafeMode = true
+                    log("⚠️ 安全模式：上次异常退出，已暂停自动重连（到「设置 → 诊断」可恢复）")
+                }
+            } else if autoReconnect, !savedPeripheralID.isEmpty {
+                log("蓝牙就绪，尝试重连上次车辆")
+                reconnectSaved()
+            }
         case .poweredOff:
             phase = .poweredOff
         case .unauthorized:
@@ -535,7 +618,9 @@ extension TeslaBLEManager: CBCentralManagerDelegate {
         log("已连接，发现服务")
         let services = [CBUUID(string: TeslaBLEUUID.vcsecService),
                         CBUUID(string: TeslaBLEUUID.infoService)]
+        log("请求服务 00000211 / 00000201")
         peripheral.discoverServices(services)
+        log("discoverServices 已发出")
     }
 
     func centralManager(_ central: CBCentralManager,
@@ -555,11 +640,12 @@ extension TeslaBLEManager: CBCentralManagerDelegate {
         rxBuffer.removeAll()
         log("已断开")
 
-        if autoReconnect {
+        if autoReconnect, !safeMode {
             phase = .connecting
             central.connect(peripheral, options: nil)
         } else {
             phase = .idle
+            if safeMode { log("安全模式：已停止自动重连") }
         }
     }
 }
@@ -569,10 +655,14 @@ extension TeslaBLEManager: CBCentralManagerDelegate {
 extension TeslaBLEManager: CBPeripheralDelegate {
 
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
+        if let error = error { log("服务发现出错：\(error.localizedDescription)") }
         guard let services = peripheral.services, !services.isEmpty else {
             phase = .error("车辆未提供 Tesla 服务")
+            log("未发现任何服务")
             return
         }
+        let list = services.map { $0.uuid.uuidString.uppercased() }.joined(separator: ", ")
+        log("发现 \(services.count) 个服务：[\(list)]")
         pendingServiceCount = services.count
         for service in services {
             peripheral.discoverCharacteristics(nil, for: service)
@@ -589,19 +679,25 @@ extension TeslaBLEManager: CBPeripheralDelegate {
                     didDiscoverCharacteristicsFor service: CBService,
                     error: Error?) {
         let uuid = service.uuid.uuidString.uppercased()
+        if let error = error { log("特征发现出错 (\(uuid))：\(error.localizedDescription)") }
+        log("服务 \(uuid) 共 \(service.characteristics?.count ?? 0) 个特征")
 
         for characteristic in service.characteristics ?? [] {
             switch characteristic.uuid.uuidString.uppercased() {
             case TeslaBLEUUID.vcsecWrite:
                 vcsecWrite = characteristic
+                log("✔ VCSEC 写入通道")
             case TeslaBLEUUID.vcsecNotify:
                 vcsecNotify = characteristic
                 peripheral.setNotifyValue(true, for: characteristic)
+                log("✔ VCSEC 通知通道")
             case TeslaBLEUUID.infoWrite:
                 infoWrite = characteristic
+                log("✔ 信息娱乐写入通道")
             case TeslaBLEUUID.infoNotify:
                 infoNotify = characteristic
                 peripheral.setNotifyValue(true, for: characteristic)
+                log("✔ 信息娱乐通知通道")
             default:
                 break
             }

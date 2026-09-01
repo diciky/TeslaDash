@@ -141,9 +141,12 @@ struct PBReader {
             return (field, .fixed64(v))
 
         case 2:
-            guard let len = readVarInt(), index + Int(truncatingIfNeeded: len) <= data.count else { return nil }
+            // 长度是 UInt64：车机若回异常数据，Int(truncatingIfNeeded:) 可能变成负数，
+            // 或 index + len 触发 Int 溢出陷阱，两者都会让 subdata(in:) 直接崩进程。
+            // 先做无溢出的上界夹取，非法长度一律当坏帧丢弃。
+            guard let len = readVarInt(), len <= UInt64(data.count - index) else { return nil }
             let start = index
-            index += Int(truncatingIfNeeded: len)
+            index += Int(len)
             return (field, .bytes(data.subdata(in: start..<index)))
 
         case 5:

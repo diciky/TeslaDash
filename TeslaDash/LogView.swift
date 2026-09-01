@@ -15,6 +15,15 @@ struct LogView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
+
+                if let report = ble.crashReport {
+                    CrashReportCard(report: report) {
+                        UIPasteboard.general.string = report
+                    } dismiss: {
+                        ble.resumeNormalMode()
+                    }
+                }
+
                 if ble.logLines.isEmpty {
                     VStack(spacing: 10) {
                         Image(systemName: "text.alignleft")
@@ -69,5 +78,56 @@ struct LogView: View {
 struct LogView_Previews: PreviewProvider {
     static var previews: some View {
         LogView().environmentObject(TeslaBLEManager())
+    }
+}
+
+// MARK: - 崩溃报告卡
+// 上次崩溃的原因 + 调用栈 + 崩溃前最后日志，直接摆在日志页最上面，
+// 便于把内容复制出来定位问题。
+
+private struct CrashReportCard: View {
+
+    let report: String
+    let copy: () -> Void
+    let dismiss: () -> Void
+
+    @State private var expanded = true
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                Image(systemName: "exclamationmark.octagon.fill")
+                    .foregroundColor(.red)
+                Text("上次运行发生崩溃")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.red)
+                Spacer()
+                Button(expanded ? "收起" : "展开") { expanded.toggle() }
+                    .font(.caption)
+            }
+
+            if expanded {
+                ScrollView(.vertical, showsIndicators: true) {
+                    Text(report)
+                        .font(.system(size: 10, design: .monospaced))
+                        .foregroundColor(.red.opacity(0.9))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .frame(maxHeight: 220)
+
+                HStack {
+                    Button { copy() } label: { Label("复制报告", systemImage: "doc.on.doc") }
+                    Spacer()
+                    Button { dismiss() } label: { Label("恢复正常模式", systemImage: "checkmark.circle") }
+                }
+                .font(.caption)
+            }
+        }
+        .padding(12)
+        .background(Color.red.opacity(0.10))
+        .overlay(
+            Rectangle().fill(Color.red.opacity(0.5)).frame(height: 1),
+            alignment: .bottom
+        )
     }
 }

@@ -165,6 +165,41 @@ struct SettingsView: View {
                     }
                 }
 
+                Section(header: Text("诊断")) {
+                    HStack {
+                        Image(systemName: ble.safeMode ? "hand.raised.fill" : "checkmark.shield.fill")
+                            .foregroundColor(ble.safeMode ? .orange : .green)
+                        Text(ble.safeMode ? "安全模式：已暂停自动重连" : "正常模式")
+                            .font(.subheadline)
+                    }
+
+                    if ble.safeMode {
+                        Text("检测到上次运行异常结束，为方便打开 App 已临时关闭自动重连。确认无碍后再点下面的按钮恢复。")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        Button {
+                            haptic()
+                            ble.resumeNormalMode()
+                        } label: {
+                            Label("恢复正常连接", systemImage: "arrow.counterclockwise")
+                        }
+                    }
+
+                    Button {
+                        haptic()
+                        ble.forgetSavedVehicle()
+                    } label: {
+                        Label("清除已保存车辆", systemImage: "car.side.slash")
+                    }
+
+                    Button {
+                        haptic()
+                        UIPasteboard.general.string = ble.logLines.joined(separator: "\n")
+                    } label: {
+                        Label("复制全部日志", systemImage: "doc.on.doc")
+                    }
+                }
+
                 Section(header: Text("关于")) {
                     HStack {
                         Text("协议")
