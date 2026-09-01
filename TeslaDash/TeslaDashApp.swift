@@ -28,7 +28,7 @@ enum CrashCatcher {
             调用栈:
             \(ex.callStackSymbols.prefix(25).joined(separator: "\n"))
             """
-            save(report)
+            CrashCatcher.save(report)
         }
 
         // 捕获常见致命信号（Swift 数组越界 / 强制解包 nil / ObjC 异常最终多走 SIGABRT）
@@ -38,7 +38,7 @@ enum CrashCatcher {
             调用栈:
             \(Thread.callStackSymbols.prefix(25).joined(separator: "\n"))
             """
-            save(report)
+            CrashCatcher.save(report)
             signal(sig, SIG_DFL)   // 恢复默认处理，让系统生成正常崩溃报告
             raise(sig)
         }
